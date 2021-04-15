@@ -20,6 +20,7 @@ class Crop extends StatefulWidget {
   final double maximumScale;
   final bool alwaysShowGrid;
   final bool showHandles;
+  final EdgeInsets defaultPadding;
   final ImageErrorListener? onImageError;
 
   const Crop({
@@ -29,6 +30,7 @@ class Crop extends StatefulWidget {
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
     this.showHandles = true,
+    this.defaultPadding = EdgeInsets.zero,
     this.onImageError,
   }) : super(key: key);
 
@@ -40,6 +42,7 @@ class Crop extends StatefulWidget {
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
     this.showHandles = true,
+    this.defaultPadding = EdgeInsets.zero,
     this.onImageError,
   })  : image = FileImage(file, scale: scale),
         super(key: key);
@@ -53,6 +56,7 @@ class Crop extends StatefulWidget {
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
     this.showHandles = true,
+    this.defaultPadding = EdgeInsets.zero,
     this.onImageError,
   })  : image = AssetImage(assetName, bundle: bundle, package: package),
         super(key: key);
@@ -300,7 +304,24 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
       _maxAreaWidthMap[aspectRatio] = width;
     }
 
-    return Rect.fromLTWH((1.0 - width) / 2, (1.0 - height) / 2, width, height);
+    final rect = Rect.fromLTWH(
+      (1.0 - width) / 2, (1.0 - height) / 2, width, height
+    );
+    if (widget.defaultPadding == EdgeInsets.zero) return rect;
+    final boundaries = _boundaries;
+    if (boundaries == null) return rect;
+    final deflated = widget.defaultPadding.deflateRect(Rect.fromLTWH(
+      rect.left * boundaries.width,
+      rect.top * boundaries.height,
+      rect.width * boundaries.width,
+      rect.height * boundaries.height
+    ));
+    return Rect.fromLTWH(
+      deflated.left / boundaries.width,
+      deflated.top / boundaries.height,
+      deflated.width / boundaries.width,
+      deflated.height / boundaries.height,
+    );
   }
 
   void _updateImage(ImageInfo imageInfo, bool synchronousCall) {
