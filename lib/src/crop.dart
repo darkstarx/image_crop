@@ -19,6 +19,7 @@ class Crop extends StatefulWidget {
   final double maximumScale;
   final bool alwaysShowGrid;
   final bool showHandles;
+  final EdgeInsets defaultPadding;
   final ImageErrorListener onImageError;
 
   const Crop({
@@ -28,11 +29,13 @@ class Crop extends StatefulWidget {
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
     this.showHandles = true,
+    this.defaultPadding = EdgeInsets.zero,
     this.onImageError,
   })  : assert(image != null),
         assert(maximumScale != null),
         assert(alwaysShowGrid != null),
         assert(showHandles != null),
+        assert(defaultPadding != null),
         super(key: key);
 
   Crop.file(
@@ -43,11 +46,13 @@ class Crop extends StatefulWidget {
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
     this.showHandles = true,
+    this.defaultPadding = EdgeInsets.zero,
     this.onImageError,
   })  : image = FileImage(file, scale: scale),
         assert(maximumScale != null),
         assert(alwaysShowGrid != null),
         assert(showHandles != null),
+        assert(defaultPadding != null),
         super(key: key);
 
   Crop.asset(
@@ -59,11 +64,13 @@ class Crop extends StatefulWidget {
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
     this.showHandles = true,
+    this.defaultPadding = EdgeInsets.zero,
     this.onImageError,
   })  : image = AssetImage(assetName, bundle: bundle, package: package),
         assert(maximumScale != null),
         assert(alwaysShowGrid != null),
         assert(showHandles != null),
+        assert(defaultPadding != null),
         super(key: key);
 
   @override
@@ -282,7 +289,25 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
     if (!_maxAreaWidthMap.containsKey(widget.aspectRatio)) {
       _maxAreaWidthMap[widget.aspectRatio] = width;
     }
-    return Rect.fromLTWH((1.0 - width) / 2, (1.0 - height) / 2, width, height);
+    final rect = Rect.fromLTWH(
+      (1.0 - width) / 2, (1.0 - height) / 2, width, height
+    );
+    if (widget.defaultPadding == EdgeInsets.zero) {
+      return rect;
+    }
+    final boundaries = _boundaries;
+    final deflated = widget.defaultPadding.deflateRect(Rect.fromLTWH(
+      rect.left * boundaries.width,
+      rect.top * boundaries.height,
+      rect.width * boundaries.width,
+      rect.height * boundaries.height
+    ));
+    return Rect.fromLTWH(
+      deflated.left / boundaries.width,
+      deflated.top / boundaries.height,
+      deflated.width / boundaries.width,
+      deflated.height / boundaries.height
+    );
   }
 
   void _updateImage(ImageInfo imageInfo, bool synchronousCall) {
