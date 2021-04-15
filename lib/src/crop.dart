@@ -19,6 +19,7 @@ class Crop extends StatefulWidget {
   final double? aspectRatio;
   final double maximumScale;
   final bool alwaysShowGrid;
+  final bool showHandles;
   final ImageErrorListener? onImageError;
 
   const Crop({
@@ -27,6 +28,7 @@ class Crop extends StatefulWidget {
     this.aspectRatio,
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
+    this.showHandles = true,
     this.onImageError,
   }) : super(key: key);
 
@@ -37,6 +39,7 @@ class Crop extends StatefulWidget {
     this.aspectRatio,
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
+    this.showHandles = true,
     this.onImageError,
   })  : image = FileImage(file, scale: scale),
         super(key: key);
@@ -49,6 +52,7 @@ class Crop extends StatefulWidget {
     this.aspectRatio,
     this.maximumScale = 2.0,
     this.alwaysShowGrid = false,
+    this.showHandles = true,
     this.onImageError,
   })  : image = AssetImage(assetName, bundle: bundle, package: package),
         super(key: key);
@@ -193,6 +197,7 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
                 area: _area,
                 scale: _scale,
                 active: _activeController.value,
+                showHandles: widget.showHandles,
               ),
             ),
           ),
@@ -228,7 +233,10 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
       return null;
     }
 
-    return size - const Offset(_kCropHandleSize, _kCropHandleSize) as Size;
+    return size - (widget.showHandles
+      ? const Offset(_kCropHandleSize, _kCropHandleSize)
+      : Offset.zero
+    ) as Size;
   }
 
   Offset? _getLocalPoint(Offset point) {
@@ -333,6 +341,8 @@ class CropState extends State<Crop> with TickerProviderStateMixin, Drag {
   }
 
   _CropHandleSide _hitCropHandle(Offset? localPoint) {
+    if (!widget.showHandles) return _CropHandleSide.none;
+
     final boundaries = _boundaries;
     if (localPoint == null || boundaries == null) {
       return _CropHandleSide.none;
@@ -625,6 +635,7 @@ class _CropPainter extends CustomPainter {
   final Rect area;
   final double scale;
   final double active;
+  final bool showHandles;
 
   _CropPainter({
     required this.image,
@@ -633,6 +644,7 @@ class _CropPainter extends CustomPainter {
     required this.area,
     required this.scale,
     required this.active,
+    required this.showHandles,
   });
 
   @override
@@ -642,17 +654,20 @@ class _CropPainter extends CustomPainter {
         oldDelegate.ratio != ratio ||
         oldDelegate.area != area ||
         oldDelegate.active != active ||
-        oldDelegate.scale != scale;
+        oldDelegate.scale != scale ||
+        oldDelegate.showHandles != showHandles;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Rect.fromLTWH(
-      _kCropHandleSize / 2,
-      _kCropHandleSize / 2,
-      size.width - _kCropHandleSize,
-      size.height - _kCropHandleSize,
-    );
+    final rect = showHandles
+      ? Rect.fromLTWH(
+          _kCropHandleSize / 2,
+          _kCropHandleSize / 2,
+          size.width - _kCropHandleSize,
+          size.height - _kCropHandleSize,
+        )
+      : Rect.fromLTWH(0.0, 0.0, size.width, size.height);
 
     canvas.save();
     canvas.translate(rect.left, rect.top);
@@ -712,6 +727,8 @@ class _CropPainter extends CustomPainter {
   }
 
   void _drawHandles(Canvas canvas, Rect boundaries) {
+    if (!showHandles) return;
+
     final paint = Paint()
       ..isAntiAlias = true
       ..color = _kCropHandleColor;
