@@ -176,7 +176,7 @@ class CropState extends State<Crop>
           final newSize = constraints.biggest;
           if (_size != newSize) {
             _size = newSize;
-            Future(_updateView);
+            if (_image != null) Future(_updateView);
           }
           return GestureDetector(
             key: _surfaceKey,
@@ -382,6 +382,7 @@ class CropState extends State<Crop>
 
   void _updateView()
   {
+    assert(_image != null);
     final oldScale = _scale;
     _scale = 1.0;
     _ratio = max(
