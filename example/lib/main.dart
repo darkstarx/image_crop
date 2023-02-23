@@ -71,7 +71,7 @@ class _MyAppState extends State<MyApp> {
                   'Crop Image',
                   style: Theme.of(context)
                       .textTheme
-                      .button
+                      .labelLarge
                       .copyWith(color: Colors.white),
                 ),
                 onPressed: () => _cropImage(),
@@ -88,7 +88,7 @@ class _MyAppState extends State<MyApp> {
     return TextButton(
       child: Text(
         'Open Image',
-        style: Theme.of(context).textTheme.button.copyWith(color: Colors.white),
+        style: Theme.of(context).textTheme.labelLarge.copyWith(color: Colors.white),
       ),
       onPressed: () => _openImage(),
     );
