@@ -75,7 +75,7 @@ class Crop extends StatefulWidget
 }
 
 
-class CropState extends State<Crop> with TickerProviderStateMixin, Drag
+class CropState extends State<Crop> with TickerProviderStateMixin
 {
   double get scale => _area.shortestSide / _scale;
 
